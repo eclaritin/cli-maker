@@ -88,8 +88,6 @@ let cli = new CLI();
 
 let authScope = cli.scope("auth"); // creates a new scope
 
-authScope.param();
-
 cli.command("run", (...args) => {
   /* ... */
 }); // creates a command with a callback
