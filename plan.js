@@ -17,28 +17,28 @@ new Setting extends Param:
     override name: string = "setting";
     private #value: any? = null;
     override value: any? ( get; set; ) // calls this.onChange & then this.persist after setting
-    onChange: (newValue: any?)=>any? // if a value is returned by this function, it becomes the new value
+    onChange: ((newValue: any?)=>any?)? = null // if a value is returned by this function, it becomes the new value
 
     persist() => CLI.Setting // writes or overwrites this setting to the config file managed by the parent scope
 
 new Command extends Param:
     override name: string = "command";
-    override value: (...args)=>void = Command.NotImplementedCallback;
+    override value: (...any)=>void;
 
-    params: CLI.Param[] = []; // key could be string for param or number for ordinal arg
-    arg(name: string, comment: string = "") => CLI.Scope; // adds an ordinal argument to the help message for this command
+    args: CLI.Arg[] = []; 
+    arg(name: string, defaultValue: any?) => CLI.Command; // adds an ordinal argument to search for when running this command
 
     exec(...any) => void; // executes the callback with the specified arguments
-    execWithParams(...any) => void // assigns all parameters, then calls the main exec method with params filtered out of args
     
-    static NotImplementedCallback(name: string) => void; // displays `Sorry, but the command '${name}' has not been implemented yet.`
-    static NotFoundCallback(name: string) => void; // displays `Sorry, but the command '${name}' was not found in this scope.`
+    static NotImplemented(name: string) => void; // displays `Sorry, but the command '${name}' has not been implemented yet.`
+    static NotFound(name: string) => void; // displays `Sorry, but the command '${name}' was not found in this scope.`
 
-new Scope:
+new Scope(private #scopeRef: CLI.Scope):
     name: string = "scope"; // used for accessing in scope.get____() and in the help message
     commands: CLI.Command[] = [];
     params: CLI.Param[] = [];
     scopes: CLI.Scope[] = [];
+    parent: CLI.Scope ( get => this.#scopeRef; )
 
     comment: string = ""; // used in the help message
     helpMessage: string ( get; )
@@ -48,20 +48,20 @@ new Scope:
     private #readConfig() => object // synchronously reads config file & parses to an object
     private #writeConfig(obj: object) => void; // synchronously writes a serialized version of the object to the config file
     persist(setting: Setting) => CLI.Scope; // writes the setting's key & value information to the config file
-    readonly config: object ( get; ) // returns a readonly version of this.#configOBJ
+    readonly config: object ( get; ) // returns a readonly version of this.#readConfig()
 
     getCommand(key: string) => CLI.Command?;
     getParam(key: string) => CLI.Param?;
     getSetting(key: string) => CLI.Setting?; // basically getParam but validation for if the param is a setting
     getScope(key: string) => CLI.Scope?;
-    get(key: string) => CLI.Command | CLI.Param | CLI.Scope | undefined;
+    get(key: string) => CLI.Command | CLI.Param | CLI.Scope | null;
 
     scope(key: string) => CLI.Scope; // creates a new scope
     setting(key: string, defaultValue: any?) => CLI.Scope; // creates a new setting in this.params
     param(key: string, defaultValue: any?) => CLI.Scope; // creates a new param in this.params
     command(key: string, callbackfn: (...any)=>void) => CLI.Scope;
 
-    call(key: string, ...any) => void; // runs a command with the specified args. if not found, runs CLI.Command.NotFoundCallback(key)
+    call(key: string, ...any) => CLI.Scope; // runs a command with the specified args. if not found, runs CLI.Command.NotFoundCallback(key)
 
 new App extends Scope:
     override name: string = FILENAME | PACKAGENAME (if FILENAME.lower().trim() === "index.js" | "main.js");

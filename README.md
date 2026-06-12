@@ -5,15 +5,15 @@ A javascript library for easily making CLI applications. Handles ordinal argumen
 ## To-do:
 
 - [x] Plan classes, properties, & methods.
-- [ ] Convert plan to JS boilerplate
-- [ ] Write package boilerplate & install dependencies
+- [x] Convert plan to JS boilerplate
+- [x] Write package boilerplate & install dependencies
 - [ ] Functionality
-  - [ ] Scope adder methods
-  - [ ] Scope getter methods
-  - [ ] Setting methods & Scope config methods
-  - [ ] Command methods
-  - [ ] App callback setting
+  - [x] `Scope` getter methods
+  - [x] `App` callback setting
+  - [ ] `Scope` adder methods
+  - [ ] `Setting` (as in the subclass of param) methods & `Scope` config methods
+  - [/] `Command` methods
   - [ ] Default loop
   - [ ] Argument parser
   - [ ] Help message generator
-- [ ] Write test implementation & debug
+- [/] Write test implementation & debug
