@@ -6,7 +6,7 @@
 /*
 
 new Param(private #scopeRef: CLI.Scope):
-    name: string = "param"; // used for searching in scope.get____() and in the help message
+    name: string = "param"; // used for accessing in scope.get____() and in the help message
     value: any? = null;
     parent: CLI.Scope ( get => this.#scopeRef; )
 
@@ -24,7 +24,9 @@ new Setting extends Param:
 new Command extends Param:
     override name: string = "command";
     override value: (...args)=>void = Command.NotImplementedCallback;
-    params: CLI.Param[] = [];
+
+    params: CLI.Param[] = []; // key could be string for param or number for ordinal arg
+    arg(name: string, comment: string = "") => CLI.Scope; // adds an ordinal argument to the help message for this command
 
     exec(...any) => void; // executes the callback with the specified arguments
     execWithParams(...any) => void // assigns all parameters, then calls the main exec method with params filtered out of args
@@ -55,7 +57,7 @@ new Scope:
     get(key: string) => CLI.Command | CLI.Param | CLI.Scope | undefined;
 
     scope(key: string) => CLI.Scope; // creates a new scope
-    setting(key: string, defaultValue: any?) => CLI.Scope; // creates a new setting in this.params (polymorphism babey :3)
+    setting(key: string, defaultValue: any?) => CLI.Scope; // creates a new setting in this.params
     param(key: string, defaultValue: any?) => CLI.Scope; // creates a new param in this.params
     command(key: string, callbackfn: (...any)=>void) => CLI.Scope;
 
@@ -64,6 +66,8 @@ new Scope:
 new App extends Scope:
     override name: string = FILENAME | PACKAGENAME (if FILENAME.lower().trim() === "index.js" | "main.js");
     
+    arg(name: string, comment: string = "") => CLI.Scope; // adds an ordinal argument to the help message for the main app
+
     mainCallback: ((...any)=>void)? = null; // default callback that is run when no actions or commands are specified
     errorCallback: ((reason: any?)=>void)? = null; // top-level callback that is run when an unhandled error is encountered
     main((...any)=>void) => CLI.App; // sets the main callback
@@ -82,7 +86,9 @@ const CLI = require("cli-maker-lib").App;
 
 let cli = new CLI();
 
-cli.scope("auth"); // creates a new scope
+let authScope = cli.scope("auth"); // creates a new scope
+
+authScope.param();
 
 cli.command("run", (...args) => {
   /* ... */

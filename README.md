@@ -4,7 +4,7 @@ A javascript library for easily making CLI applications. Handles ordinal argumen
 
 ## To-do:
 
-- [ ] Plan classes, properties, & methods.
+- [x] Plan classes, properties, & methods.
 - [ ] Convert plan to JS boilerplate
 - [ ] Write package boilerplate & install dependencies
 - [ ] Functionality
