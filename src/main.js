@@ -1,5 +1,5 @@
-import Param from "./Param.mjs";
 import Scope from "./Scope.mjs";
+import Param from "./Param.mjs";
 import Command from "./Command.mjs";
 import Setting from "./Setting.mjs";
 import App from "./App.mjs";

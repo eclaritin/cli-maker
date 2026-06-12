@@ -1,10 +1,7 @@
-// Import packages
-const CLI = require("../src/main");
+import("../src/main.js").then((CLI) => {
+  // Build app
+  const app = new CLI.App();
 
-// Constants
-const app = new CLI();
-
-// TODO: Build app
-
-// Run app
-app.start();
+  // Experiment
+  console.log(app);
+});

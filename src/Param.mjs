@@ -1,10 +1,6 @@
 // Internal Modules //
 import Scope from "./Scope.mjs";
-import {
-  throwIfNotInstanceOf,
-  throwIfNotType,
-  DataType as prim,
-} from "./Type.mjs";
+import { throwIfNotA, DataType as prim } from "./Type.mjs";
 
 // Default Class //
 export default class Param {
@@ -28,8 +24,8 @@ export default class Param {
    */
   constructor(parentScope, name = "param", defaultValue = null) {
     // type checking
-    throwIfNotInstanceOf(parentScope, Scope);
-    throwIfNotType(name, prim.String);
+    throwIfNotA(parentScope, Scope);
+    throwIfNotA(name, prim.String);
 
     // assign fields
     this.#scopeRef = parentScope;

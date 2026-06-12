@@ -9,8 +9,6 @@ import { throwIfNotA, DataType as dt } from "./Type.mjs";
 export default class App extends Scope {
   /// Properties ///
   /** @type {string} */
-  name;
-  /** @type {string} */
   version;
 
   /** @type {((...any)=>void)?} default callback that is run when no actions or commands are specified */
@@ -24,7 +22,7 @@ export default class App extends Scope {
    * Creates an instance of App
    * @param {string} name Name of your app (must be file-system friendly)
    */
-  constructor(name = __filename) {
+  constructor(name = "app") {
     // validate name
     throwIfNotA(name, dt.String);
     name = name.trim();
@@ -34,6 +32,9 @@ export default class App extends Scope {
     if (name.toLowerCase() === "index" || name.toLowerCase() === "main") {
       name = __dirname.trim();
     }
+
+    // super
+    super(Scope, name);
 
     // assign fields
     this.name = name;
