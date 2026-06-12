@@ -7,42 +7,7 @@ import {
   throwIfInvalid,
   throwIfNotAType,
 } from "./Type.mjs";
-
-// Other Classes //
-
-class Arg {
-  /** @type {string} */
-  name;
-  /** @type {dt|object} */
-  type;
-  /** @type {any?} */
-  default;
-  /** @type {string} */
-  comment;
-
-  /** @type {boolean} */
-  get optional() {
-    return this.default !== undefined;
-  }
-
-  /**
-   *
-   * @param {string} name
-   * @param {dt} expectedType
-   * @param {any?} [defaultValue]
-   */
-  constructor(name, expectedType = dt.Any, defaultValue = undefined) {
-    // validate
-    throwIfNotA(name, dt.String);
-    throwIfNotAType(expectedType);
-
-    // assign fields
-    this.name = name;
-    this.type = expectedType;
-    this.default = defaultValue;
-    this.comment = "";
-  }
-}
+import Arg from "./Arg.mjs";
 
 // Default Class //
 export default class Command extends Param {
@@ -131,7 +96,7 @@ export default class Command extends Param {
    */
   arg(name, type = dt.Any, defaultValue = undefined, comment = "") {
     // validate method params
-    throwIfNotA(type, dt);
+    throwIfNotAType(type);
     throwIfNotA(name, dt.String);
 
     // create arg
