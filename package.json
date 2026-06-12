@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "description": "javascript library for easily making CLI applications",
   "main": "src/main.js",
+  "module": "src/main.js",
+  "type": "module",
   "scripts": {
     "test": "node ."
   },
