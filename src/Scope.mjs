@@ -203,7 +203,10 @@ export default class Scope {
    */
   scope(key) {
     throwIfNotA(key, dt.String);
-    // TODO
+
+    let newScope = new Scope(this, key);
+    this.scopes.push(newScope);
+
     return this;
   }
 
@@ -215,7 +218,10 @@ export default class Scope {
    */
   param(key, defaultValue = undefined) {
     throwIfNotA(key, dt.String);
-    // TODO
+
+    let newParam = new Param(this, key, defaultValue);
+    this.params.push(newParam);
+
     return this;
   }
 
@@ -227,7 +233,10 @@ export default class Scope {
    */
   setting(key, defaultValue = undefined) {
     throwIfNotA(key, dt.String);
-    // TODO
+
+    let newParam = new Setting(this, key, defaultValue);
+    this.params.push(newParam);
+
     return this;
   }
 
@@ -245,7 +254,10 @@ export default class Scope {
     },
   ) {
     throwIfNotA(key, dt.String);
-    // TODO
+
+    let cmd = new Command(this, key, callbackfn);
+    this.commands.push(cmd);
+
     return this;
   }
 }
