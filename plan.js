@@ -76,26 +76,5 @@ new App extends Scope:
     parseArgs(...string) => void; // performs whatever actions or commands are specified, alternatively runs this.main if no actions are specified
     
     defaultLoop()=>void; // if mainCallback isn't specified, this runs instead of it. a terminal-like loop where you can enter different scopes & perform actions & commands more easily.
-    
+    start()=>void; // runs mainCallback or defaultLoop depending on if the callback is null or not
 */
-
-/////////////////////////////////////////////////////////////////////////////////
-// Fake implementation for planning
-
-const CLI = require("cli-maker-lib").App;
-
-let cli = new CLI();
-
-let authScope = cli.scope("auth"); // creates a new scope
-
-authScope.param();
-
-cli.command("run", (...args) => {
-  /* ... */
-}); // creates a command with a callback
-
-cli.param("verbose", false); // creates a parameter (does not persist; used temporarily for this specific run)
-
-cli.setting("idk", 123); // creates a setting (does persist, adds to scope-specific config file)
-
-cli.mainLoop(); // run main loop to navigate the app
