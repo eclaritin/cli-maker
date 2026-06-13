@@ -37,7 +37,7 @@ export default class App extends Scope {
     }
 
     // super
-    super(Scope, name);
+    super(null, name);
 
     // assign fields
     this.mainArgs = [];
@@ -45,8 +45,6 @@ export default class App extends Scope {
     this.mainCallback = null;
     this.errorCallback = null;
   }
-
-  /// Getters & Setters ///
 
   /// Methods ///
 

@@ -48,6 +48,6 @@ export default class Setting extends Param {
    * @returns {Setting} this setting
    */
   persist() {
-    // TODO
+    this.parent.persist(this);
   }
 }

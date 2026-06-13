@@ -1,3 +1,6 @@
+// Constants //
+const configDir = "./config/";
+
 // Node Packages //
 import { default as fs } from "fs";
 import { default as path } from "path";
@@ -30,7 +33,7 @@ export default class Scope {
 
   /** @type {string} */
   name;
-  /** @type {Scope} */
+  /** @type {Scope?} */
   #scopeRef;
   /** @type {Command[]} */
   commands;
@@ -45,9 +48,11 @@ export default class Scope {
 
   /**
    * Creates an instance of a Scope object
+   * @param {Scope?} [parentScope]
+   * @param {string} [name="scope"]
    */
-  constructor(parentScope, name = "scope") {
-    this.#scopeRef = parentScope;
+  constructor(parentScope = null, name = "scope") {
+    this.#scopeRef = parentScope instanceof Scope ? parentScope : null;
     this.name = name;
     this.comment = "";
     this.commands = [];
@@ -57,6 +62,7 @@ export default class Scope {
 
   /// Getters & Setters ///
 
+  /** @type {Scope?} */
   get parent() {
     return this.#scopeRef;
   }
@@ -68,7 +74,18 @@ export default class Scope {
 
   /** @type {string} */
   get #configPath() {
-    // TODO
+    // init vars
+    let collected_names = [];
+    let traverse = this;
+
+    // traverse the hierarchy upwards, recording each name
+    while (isA(traverse, Scope)) {
+      collected_names.push(traverse.name);
+      traverse = traverse.parent;
+    }
+    collected_names.reverse();
+    let filename = collected_names.join(".") + ".json"; // creates a filename separated by periods and specify its a json file
+    return path.join(configDir, filename); // append filename to the config directory path to be placed there
   }
 
   /** @readonly @type {{[key: string]: any?}} */
@@ -87,24 +104,52 @@ export default class Scope {
 
   // Config //
 
+  /** Creates the config file & its parent directory if not found */
+  #ensureConfigFileExists() {
+    let path = this.#configPath; // get path
+
+    // ensure both dir & file exist
+    if (!fs.existsSync(configDir)) fs.mkdir(configDir);
+    if (!fs.existsSync(path))
+      fs.writeFileSync(path, "{}", { encoding: "utf-8" });
+  }
+
   /**
    * Reads the config file for this scope & returns an object representing the encoded data
    * @returns {{[key: string]: any?}}
    */
-  #readConfig() {}
+  #readConfig() {
+    this.#ensureConfigFileExists();
+
+    let data = fs.readFileSync(this.#configPath, { encoding: "utf-8" });
+    return JSON.parse(data);
+  }
 
   /**
    * Writes a serialized version of the object to the config file
    * @param {{[key: string]: any?}} obj config object to encode
    */
-  #writeConfig(obj) {}
+  #writeConfig(obj) {
+    this.#ensureConfigFileExists();
+    let data = JSON.stringify(obj);
+    fs.writeFileSync(this.#configPath, data, { encoding: "utf-8" });
+  }
 
   /**
    * Writes the setting's key & value information to the config file
    * @param {Setting} setting
    * @returns {Scope} this
    */
-  persist(setting) {}
+  persist(setting) {
+    let key = setting.name;
+    let val = setting.value;
+
+    let obj = this.#readConfig();
+    obj[key] = val;
+    this.#writeConfig(obj);
+
+    return this;
+  }
 
   // Get //
 
