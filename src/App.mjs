@@ -93,9 +93,7 @@ export default class App extends Scope {
    * If mainCallback isn't specified, this runs instead of it.
    * This starts a terminal-like loop where you can enter different scopes & perform actions & commands more easily.
    */
-  defaultLoop() {
-    // TODO
-  }
+  defaultLoop() {}
 
   // Setting callbacks
 
