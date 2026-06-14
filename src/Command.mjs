@@ -36,8 +36,15 @@ export default class Command extends Param {
   //// Instance ////
 
   /// Properties ///
+  // Command //
   /** @type {Arg[]} */
   args;
+
+  // Flags //
+  /** @type {boolean} */
+  enableNoMainCallbackError;
+  /** @type {boolean} */
+  throwIfInvalidArgs;
 
   /// Constructor ///
 

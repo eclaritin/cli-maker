@@ -3,6 +3,15 @@ import { throwIfNotA, throwIfNotAType, DataType as dt } from "./Type.mjs";
 
 // Default Class //
 export default class Arg {
+  /// Static ///
+
+  static parseArg(arg){
+    
+  }
+
+
+  /// Instance ///
+
   /** @type {string} */
   name;
   /** @type {dt|object} */
