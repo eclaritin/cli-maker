@@ -61,7 +61,9 @@ export default class App extends Scope {
   start(argv) {
     let args = [...argv.slice(2)];
 
-    console.log(args);
+    for (let i=0;i<args.length;i++){
+      console.log(Arg.parseArgVal(args[i]));
+    }
   }
 
   // Argument parsing

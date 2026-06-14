@@ -26,7 +26,8 @@ export function isAType(value) {
  * @param {any?} value the value to test
  */
 export function throwIfNotAType(value) {
-  throwIfInvalid(value, [DataType, DataType.Object]);
+  throwIfNotA(value, dt.Object);
+  throwIfNotA(value, dt);
 }
 
 /**
@@ -36,9 +37,7 @@ export function throwIfNotAType(value) {
  * @returns {boolean}
  */
 export function isEnum(value, type = DataType.Any) {
-  throwIfNotAType(type); // validate
-
-  if (!isA(value, dt.Object)) return false; // all Enums are objects
+  if (typeof value !== "object" || value === null) return false; // all Enums are objects
 
   let keys = Object.keys(value);
   for (let i = 0; i < keys.length; i++)
@@ -146,13 +145,13 @@ export function isA(value, type) {
   if (type === DataType.Any) return true; // Allow any type
   if (type === Array) return Array.isArray(value); // test if is array (if type is Array)
 
-  if (!isEnum(type, DataType)) {
+  if (!isInEnum(type, DataType)) {
     // atp, type is not a string equal to a value in the DataType enum
     // test if type is object
     throwIfNotA(value, DataType.Object);
 
     // now test if value is enum type
-    if (isEnum(value, type)) return true;
+    if (isInEnum(value, type)) return true;
 
     // now test if value is instanceof type
     if (value instanceof type) return true;
