@@ -17,7 +17,7 @@
  * @param {any?} value the value to test
  * @returns {boolean}
  */
-function isAType(value) {
+export function isAType(value) {
   return validate(value, [DataType, DataType.Object]);
 }
 
@@ -25,7 +25,7 @@ function isAType(value) {
  * Throws a TypeError if the value isn't a type
  * @param {any?} value the value to test
  */
-function throwIfNotAType(value) {
+export function throwIfNotAType(value) {
   throwIfInvalid(value, [DataType, DataType.Object]);
 }
 
@@ -35,7 +35,7 @@ function throwIfNotAType(value) {
  * @param {DataType} [type] the datatype
  * @returns {boolean}
  */
-function isEnum(value, type = DataType.Any) {
+export function isEnum(value, type = DataType.Any) {
   throwIfNotAType(type); // validate
 
   if (!isA(value, dt.Object)) return false; // all Enums are objects

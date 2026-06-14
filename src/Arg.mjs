@@ -5,10 +5,16 @@ import { throwIfNotA, throwIfNotAType, DataType as dt } from "./Type.mjs";
 export default class Arg {
   /// Static ///
 
-  static parseArg(arg){
+  /**
+   * Returns a value of any type based on the string argument
+   * @param {string} arg the raw string argument to parse
+   * @returns {any?} parsed arg
+   */
+  static parseArg(arg) {
+    throwIfNotA(arg,dt.String);
+
     
   }
-
 
   /// Instance ///
 
