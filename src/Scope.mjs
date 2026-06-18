@@ -277,10 +277,17 @@ export default class Scope {
    * @returns {Scope} this
    */
   setting(key, defaultValue = undefined) {
+    // validate
     throwIfNotA(key, dt.String);
 
+    // create the setting itself
     let newParam = new Setting(this, key, defaultValue);
     this.params.push(newParam);
+
+    // create command to get the value of the setting
+    this.command("--get-" + key, () => {
+      console.log(newParam.value); // log value
+    });
 
     return this;
   }

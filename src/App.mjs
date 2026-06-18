@@ -1,30 +1,42 @@
 // Node Packages //
 import { default as process } from "process";
+import { default as readline } from "readline";
 
 // Internal Modules //
 import Scope from "./Scope.mjs";
-import { throwIfNotA, DataType as dt, throwIfNotAType, isA } from "./Type.mjs";
+import {
+  throwIfNotA,
+  DataType as dt,
+  throwIfNotAType,
+  isA,
+  typeOf,
+} from "./Type.mjs";
 import Arg from "./Arg.mjs";
+
+// Constants //
+const DEBUG_MODE = true; // for debugging purposes, disable before release
 
 // Default Class //
 export default class App extends Scope {
   /// Properties ///
   /** @type {string} */
   version;
+  /** @type {Scope} */
+  #currentScope;
 
   // Callbacks //
   /** @type {((...any)=>void)?} default callback that is run when no actions or commands are specified */
-  #mainCallback;
+  mainCallback;
   /** @type {Arg[]} the argument scheme for the mainCallback function */
   mainArgs;
   /** @type {((any?)=>void)?} top-level callback that is run when an unhandled error is encountered */
   #errorCallback;
 
   // Flags //
-  /** @type {boolean} */
-  enableNoMainCallbackError;
-  /** @type {boolean} */
+  /** @type {boolean} Exit early & log error if main args are invalid */
   throwIfInvalidArgs;
+  /** @type {boolean} If no mainCallback is specified or no args are passed, enter a mode where you navigate the various scopes of the CLI app */
+  enableDefaultLoop;
 
   /// Constructor ///
 
@@ -49,31 +61,39 @@ export default class App extends Scope {
     // assign fields
     this.mainArgs = [];
     this.version = "0.0.0";
-    this.#mainCallback = null;
+    this.mainCallback = null;
     this.#errorCallback = null;
+    this.#currentScope = this;
   }
 
   /// Methods ///
 
   // Entrypoint
 
-  /** Entrypoint for the application if no action args are specified @param {...any} args the arguments to be passed to the maincallback after validation */
-  start(argv) {
-    let args = [...argv.slice(2)];
+  /**
+   * The main entrypoint for the CLI app.
+   * Call this last, after building your app with the other methods of this object.
+   * @param {string[]} [argv] If unspecified, defaults to the value of `process.argv`
+   * @returns {any} the value returned by the final command or main callback
+   */
+  start(argv = process.argv) {
+    if (argv.length === 2) return this.#defaultLoop();
 
-    for (let i=0;i<args.length;i++){
-      console.log(Arg.parseArgVal(args[i]));
-    }
+    let actions = this.#parseArgs(argv);
+    console.log(actions);
   }
 
   // Argument parsing
 
   /**
    * Parses raw string arguments and performs the written actions
-   * @param  {...string} args
+   * @param  {string[]} argv
+   * @returns {Action[]} the sequence of actions to perform
    */
-  #parseArgs(...args) {
-    // TODO
+  #parseArgs(argv = process.argv) {
+    let stringArgs = argv.slice(2);
+    let actions = Arg.parseArgs(this, stringArgs);
+    console.log(actions);
   }
 
   // REPL thing
@@ -81,8 +101,55 @@ export default class App extends Scope {
   /**
    * If mainCallback isn't specified, this runs instead of it.
    * This starts a terminal-like loop where you can enter different scopes & perform actions & commands more easily.
+   * @param {Scope} [initScope] The initial scope to start the loop in. (Set to App scope by default).
    */
-  #defaultLoop() {}
+  #defaultLoop(initScope = this) {
+    if (!this.enableDefaultLoop) return;
+
+    let userInput = "";
+
+    let rli = readline.createInterface(process.stdin, process.stdout);
+    rli.on("line", (line) => {
+      userInput = line;
+    });
+
+    let exitFlag = false;
+    this.#currentScope = initScope;
+    while (!exitFlag) {
+      if (DEBUG_MODE) exitFlag = true; // test only one iteration
+      try {
+        rli.write(``);
+        rli.line();
+
+        // filter out empty values from args
+        let args = userInput
+          .trim()
+          .split(" ")
+          .filter((elem) => {
+            return elem.trim() !== "";
+          });
+
+        let actions = Arg.parseArgs(this, args, this.#currentScope);
+
+        this.#runActions(actions);
+      } catch (err) {
+        console.error(err.message);
+      }
+    }
+  }
+
+  /**
+   *
+   * @param {Action[]} actionArr
+   * @returns {Scope?} the current scope when leaving the loop
+   */
+  #runActions(actionArr) {
+    for (let i = 0; i < actionArr.length; i++) {
+      let action = actionArr[i];
+      let type = action.type;
+      action.run();
+    }
+  }
 
   /**
    * Runs the main callback with the specified arguments, if no main callback exists, runs the main loop
@@ -91,13 +158,8 @@ export default class App extends Scope {
    */
   #runMain(...args) {
     // if no main callback specified, just run the navigation loop
-    if (!isA(this.#mainCallback, dt.Function)) {
+    if (!isA(this.mainCallback, dt.Function)) {
       // run main loop if no main callback
-      if (this.enableNoMainCallbackError)
-        console.error(
-          "No main callback registered to this app, defaulting to text-based navigation...",
-        );
-
       this.#defaultLoop();
       return;
     }
@@ -119,7 +181,7 @@ export default class App extends Scope {
     }
 
     // run callback
-    this.#mainCallback(...validArgs);
+    this.mainCallback(...validArgs);
 
     return [...args]; // return leftover args
   }
@@ -133,7 +195,7 @@ export default class App extends Scope {
    */
   main(callbackfn) {
     throwIfNotA(callbackfn, dt.Function);
-    this.#mainCallback = callbackfn;
+    this.mainCallback = callbackfn;
     return this;
   }
 
