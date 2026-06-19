@@ -93,9 +93,7 @@ export class CommandAction extends Action {
    */
   addArg(arg) {
     if (this.argsLeft === 0)
-      throw new Error(
-        `The command '${this.ref.name}' cannot take more than ${this.maxArgs} argument(s)`,
-      );
+      throw new Error(`Unexpected extra argument: ${arg}`);
 
     let i = this.args.length; // index the new argument will be placed at, also the index to check for the expected type
     let expectedType = this.ref.args[i].type; // the expected type of this arg
@@ -106,11 +104,11 @@ export class CommandAction extends Action {
 
   /**
    * Invokes the command with the specified arguments in `this.args`
-   * @returns {any?} the value obtained from the callback in `this.ref.callback`
+   * @returns {any?} the value obtained from the callback by running `this.ref.exec`
    */
   run() {
     try {
-      return this.ref.callback(...this.args);
+      return this.ref.exec(...this.args);
     } catch (err) {
       return console.error(`${err.name}: ${err.message}`);
     }
@@ -145,7 +143,7 @@ export class MainAction extends CommandAction {
   /** @param {App} app */
   constructor(app) {
     throwIfNotA(app, App);
-    super({ args: app.mainArgs, callback: app.mainCallback, name: app.name });
+    super({ args: app.mainArgs, exec: app.mainCallback, name: app.name });
 
     this.type = Action.Type.Main;
   }

@@ -9,8 +9,8 @@
       "request": "launch",
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}\\test\\index.cjs",
-      "args": ["meow", "123", "null", "true"]
+      "program": "${workspaceFolder}/tests/calc.cjs",
+      "args": ["add", "6", "7"]
     }
   ]
 }

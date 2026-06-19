@@ -244,7 +244,7 @@ export default class Scope {
   /**
    * Creates a new scope in this one
    * @param {string} key
-   * @returns {Scope} this
+   * @returns {Scope} 
    */
   scope(key) {
     throwIfNotA(key, dt.String);
@@ -252,14 +252,14 @@ export default class Scope {
     let newScope = new Scope(this, key);
     this.scopes.push(newScope);
 
-    return this;
+    return newScope;
   }
 
   /**
    * Creates a new parameter in this scope
    * @param {string} key
    * @param {any?} [defaultValue=undefined]
-   * @returns {Scope} this
+   * @returns {Param} 
    */
   param(key, defaultValue = undefined) {
     throwIfNotA(key, dt.String);
@@ -267,14 +267,14 @@ export default class Scope {
     let newParam = new Param(this, key, defaultValue);
     this.params.push(newParam);
 
-    return this;
+    return newParam;
   }
 
   /**
    * Creates a new setting in this scope
    * @param {string} key
    * @param {any?} [defaultValue=undefined]
-   * @returns {Scope} this
+   * @returns {Setting} 
    */
   setting(key, defaultValue = undefined) {
     // validate
@@ -289,14 +289,14 @@ export default class Scope {
       console.log(newParam.value); // log value
     });
 
-    return this;
+    return newParam;
   }
 
   /**
    * Creates a new command in this scope
    * @param {string} key the key to access this command
    * @param {(...any)=>void} callbackfn the function to be called when the command is invoked
-   * @returns {Scope} this
+   * @returns {Command}
    */
   command(
     key,
@@ -310,6 +310,6 @@ export default class Scope {
     let cmd = new Command(this, key, callbackfn);
     this.commands.push(cmd);
 
-    return this;
+    return cmd;
   }
 }

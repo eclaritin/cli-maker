@@ -45,6 +45,8 @@ export default class Command extends Param {
   enableNoMainCallbackError;
   /** @type {boolean} */
   throwIfInvalidArgs;
+  /** @type {boolean} */
+  showInHelp;
 
   /// Constructor ///
 
@@ -64,6 +66,7 @@ export default class Command extends Param {
     throwIfNotA(callbackfn, dt.Function); // ensure callback param is of type function
     super(parentScope, name, callbackfn); // call default constructor with validated params
     this.args = [];
+    this.showInHelp = true;
   }
 
   /// Methods ///
@@ -93,6 +96,21 @@ export default class Command extends Param {
     this.value(...validArgs); // pass processed args into it
 
     return [...args]; // return leftover args
+  }
+
+  /**
+   * Creates a new command in this scope with a different name referencing this one
+   * @param {string} otherName
+   * @returns {Command} this command (not the alias command)
+   */
+  alias(otherName) {
+    const self = this;
+    const refCmd = this.parent.command(otherName, (...passToSelf) => {
+      return self.exec(...passToSelf);
+    });
+    refCmd.args = this.args;
+    refCmd.showInHelp = false;
+    return this;
   }
 
   /**

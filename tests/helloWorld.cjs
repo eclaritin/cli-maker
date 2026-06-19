@@ -1,5 +1,3 @@
-const argv = require("process").argv;
-
 import("../src/main.js").then((CLI) => {
   // References
   const App = CLI.default;
@@ -15,6 +13,6 @@ import("../src/main.js").then((CLI) => {
     console.log(`Hello, ${name}!`);
   });
 
-  // Experiment
-  app.start(argv);
+  // Start
+  app.start();
 });
