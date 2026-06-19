@@ -1,8 +1,5 @@
-import Scope from "./Scope.mjs";
-import Param from "./Param.mjs";
-import Command from "./Command.mjs";
-import Setting from "./Setting.mjs";
+import * as Type from "./Type.mjs";
 import App from "./App.mjs";
 
 // The visible exports of the package go here //
-export { Param, Scope, Command, Setting, App };
+export { App as default, Type };

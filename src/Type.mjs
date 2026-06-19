@@ -5,10 +5,9 @@
  * I also added `"any"` / `DataType.Any` type functionality
  */
 
-/** @template T @typedef {{[keyName: string]: T, ...}} Enum */
+import App from "./App.mjs";
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//// Internal ////
+/** @template T @typedef {{[keyName: string]: T, ...}} Enum */
 
 /// Validate that value is in datatype enum ///
 
@@ -18,7 +17,7 @@
  * @returns {boolean}
  */
 export function isAType(value) {
-  return validate(value, [DataType, DataType.Object]);
+  return isInEnum(value, DataType) || isA(value, Object);
 }
 
 /**
@@ -26,8 +25,10 @@ export function isAType(value) {
  * @param {any?} value the value to test
  */
 export function throwIfNotAType(value) {
-  throwIfNotA(value, dt.Object);
-  throwIfNotA(value, dt);
+  if (!isAType(value))
+    throw new TypeError(
+      `Expected member of the DataType Enum, but got '${value}' instead!`,
+    );
 }
 
 /**
@@ -36,7 +37,7 @@ export function throwIfNotAType(value) {
  * @param {DataType} [type] the datatype
  * @returns {boolean}
  */
-export function isEnum(value, type = DataType.Any) {
+export function isEnumLike(value, type = DataType.Any) {
   if (typeof value !== "object" || value === null) return false; // all Enums are objects
 
   let keys = Object.keys(value);
@@ -54,8 +55,7 @@ export function isEnum(value, type = DataType.Any) {
   return true; // is enum atp
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//// Exported ////
+/// DataType Enum ///
 
 /** @readonly @enum {string} */
 export const DataType = Object.freeze({
@@ -69,21 +69,36 @@ export const DataType = Object.freeze({
   Undefined: "undefined",
   Null: "null",
   Any: "any",
+  Class: "class",
 });
 /** @alias DataType */
 export const dt = DataType;
 
+/// Getter Functions ///
+
 /**
- * Gets the datatype of the specified value
+ * Gets the primitive datatype of the specified value
  * @param {any?} value the value to retrieve the datatype of
  * @returns {DataType}
  */
 export function getDataType(value) {
-  if (typeof value === "object") {
+  let type = typeof value;
+
+  do {
+    // do loop for early exit statements
+    if (type !== "function") break;
+    const ructor = type.constructor;
+    if (typeof ructor !== "function") break;
+    // atp, type is a class
+
+    return DataType.Class;
+  } while (false);
+
+  if (type === "object") {
     if (value !== null) return DataType.Object;
     else return DataType.Null;
   }
-  return typeof value;
+  return type;
 }
 /**@alias getDataType */
 export const typeOf = getDataType; // quick reference
@@ -91,34 +106,25 @@ export const typeOf = getDataType; // quick reference
 /**
  * Gets the constructor (class of the specified value) (returns Object class if no specified class)
  * @param {object} object
- * @param {boolean} [preventErrorIfNotObjectType=true] prevents the TypeError that occurs if object is not an object type
  * @returns {object?} prototype.constructor or null
  */
-export function getClass(object, preventErrorIfNotObjectType = false) {
+export function getClass(object) {
   // validate type
-  let type = getDataType(object);
-  if (type !== DataType.Object) {
-    if (preventErrorIfNotObjectType) return null;
-    else
-      throw new TypeError(
-        `Expected param \`object\` to be object type but got '${getDataType(object)}' type instead`,
-      );
+  if (object !== null && typeof object !== "object") {
+    throw new TypeError(
+      `Expected param object to be object type but got '${typeOf(object)}' type instead`,
+    );
   }
-
   // atp, `object` is now verified to be object type, we can try to get the class from here //
 
-  // get prototype
-  let proto = Object.getPrototypeOf(object);
-  if (proto === null || proto === undefined)
-    return Object.prototype.constructor;
-
-  // get constructor
-  let constructor = proto.constructor;
-  if (constructor === undefined) return Object.prototype.constructor;
-  else return constructor;
+  let mightBeClass = object.constructor;
+  if (getDataType(mightBeClass) === DataType.Class) return mightBeClass;
+  return Object.prototype.constructor;
 }
 /** @alias getClass */
 export const classOf = getClass;
+
+/// Validation Functions ///
 
 /**
  * Returns if the values is a member of the specified Enum
@@ -141,25 +147,27 @@ export function isInEnum(value, enumObj) {
  * @param {DataType|object} type either a value of of DataType or a class to test if value is an instance of it
  * @returns {boolean}
  */
-export function isA(value, type) {
+export function isA(value, type, typeIsEnum = false) {
   if (type === DataType.Any) return true; // Allow any type
+  if (type === DataType) typeIsEnum = true;
   if (type === Array) return Array.isArray(value); // test if is array (if type is Array)
+  // atp, type is not DataType.Any or an Array
 
-  if (!isInEnum(type, DataType)) {
-    // atp, type is not a string equal to a value in the DataType enum
-    // test if type is object
-    throwIfNotA(value, DataType.Object);
+  if (typeIsEnum) return isInEnum(value, type);
+  // atp, type is not an enum
 
-    // now test if value is enum type
-    if (isInEnum(value, type)) return true;
+  if (isInEnum(type, DataType))
+    return typeOf(value) === type ? DataType.Null : typeof value === type; // otherwise type is a primitive
 
-    // now test if value is instanceof type
-    if (value instanceof type) return true;
-    return false;
-  }
+  // atp, type is not a primitive
 
-  let valType = value === null ? "null" : typeof value;
-  return valType === type;
+  if (typeOf(type) === dt.Class) return value instanceof type;
+  // atp, type is not a class
+
+  // unexpected value in type
+  throw new TypeError(
+    `Expected type to be member of DataType enum or class, got '${type}' of type ${typeOf(type)}`,
+  );
 }
 
 /**
@@ -174,7 +182,7 @@ export function throwIfNotA(value, type) {
 
 /**
  * Returns false if any one of the values don't match at least one the allowedTypes
- * @param {(any?)[]|any?} values the values to test
+ * @param {any[]|any?} values the values to test
  * @param {(DataType|object)[]|(DataType|object)} allowedTypes array of expected types & classes
  * @returns {boolean}
  */
