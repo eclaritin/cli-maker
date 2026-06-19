@@ -80,7 +80,7 @@ export default class App extends Scope {
     if (argv.length === 2) return this.#defaultLoop();
 
     let actions = this.#parseArgs(argv);
-    console.log(actions);
+    this.#runActions(actions);
   }
 
   // Argument parsing
@@ -91,9 +91,8 @@ export default class App extends Scope {
    * @returns {Action[]} the sequence of actions to perform
    */
   #parseArgs(argv = process.argv) {
-    let stringArgs = argv.slice(2);
-    let actions = Arg.parseArgs(this, stringArgs);
-    console.log(actions);
+    let stringArgs = argv[0] === process.argv[0] ? argv.slice(2) : argv; // if process.argv supplied, get rid of first two args (they are useless)
+    return Arg.parseArgs(this, stringArgs);
   }
 
   // REPL thing

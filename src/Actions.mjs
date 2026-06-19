@@ -1,7 +1,9 @@
 // Base Action Class //
 
 import Arg from "./Arg.mjs";
-import { throwIfNotA } from "./Type.mjs";
+import { dt, throwIfNotA } from "./Type.mjs";
+import App from "./App.mjs";
+import Command from "./Command.mjs";
 
 /**
  * The base Action class. Not meant to be used directly,
@@ -70,13 +72,17 @@ export class CommandAction extends Action {
   }
 
   /** @type {boolean} */
-  get readyToPush() {}
+  get readyToPush() {
+    return this.argsLeft === 0;
+  }
 
   /** @param {Command} ref Reference to the command this action is referencing */
   constructor(ref) {
-    throwIfNotA(ref, Command);
+    throwIfNotA(ref, dt.Object);
     super(Action.Type.Command, ref);
 
+    this.ref = ref;
+    this.type = Action.Type.Command;
     this.args = [];
   }
 
@@ -140,6 +146,7 @@ export class MainAction extends CommandAction {
   constructor(app) {
     throwIfNotA(app, App);
     super({ args: app.mainArgs, callback: app.mainCallback, name: app.name });
+
     this.type = Action.Type.Main;
   }
 }

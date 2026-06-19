@@ -17,6 +17,7 @@ import {
   MainAction,
   ParamAction,
 } from "./Actions.mjs";
+import App from "./App.mjs";
 
 // Internal Functions //
 
@@ -123,7 +124,7 @@ export default class Arg {
             ) {
               pushAction();
               actionStack.push(new CommandAction(found));
-            } else args.push(arg);
+            } else currAction.args.push(arg);
           } else if (currAction instanceof ParamAction) {
             // this is supposed to be a param value
             currAction.value(arg);
@@ -147,7 +148,16 @@ export default class Arg {
         case dt.Boolean:
         case dt.Null:
         case dt.Undefined:
-          pushToAction(arg);
+          try {
+            pushToAction(arg);
+          } catch (err) {
+            if (!(err instanceof Error)) throw err;
+            if (!err.message.toLowerCase().startsWith("unrecognized action:"))
+              throw err;
+            throw new Error(
+              `Unexpected extra argument '${arg}'! The program, '${app.name}' takes a maximum of ${app.mainArgs.length} argument(s)`,
+            );
+          }
           break;
         default:
           throw new TypeError(
