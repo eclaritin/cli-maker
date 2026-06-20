@@ -17,6 +17,8 @@ export default class Param {
   type;
   /** @type {((any?)=>void)?} Called when the param is changed. First parameter is the new value. */
   onChange;
+  /** @type {boolean} */
+  showInHelp;
 
   /// Constructor ///
 
@@ -38,6 +40,7 @@ export default class Param {
     this.comment = "";
     this.type = defaultValue === undefined ? prim.Any : typeOf(defaultValue);
     this.onChange = null;
+    this.showInHelp = true;
   }
 
   /// Getters & Setters ///
@@ -45,11 +48,6 @@ export default class Param {
   /** @type {Scope} */
   get parent() {
     return this.#scopeRef;
-  }
-
-  /** @type {string} */
-  get helpMessage() {
-    // TODO
   }
 
   /** @type {any?} */
@@ -73,5 +71,21 @@ export default class Param {
   /** Underlying method that reads this value. Separated from the getter so I can use it in subclasses. */
   _get() {
     return this.#value;
+  }
+
+  /** Displays the help message */
+  help() {
+    console.log(this.comment);
+  }
+
+  /**
+   * Sets the new comment for this object
+   * @param {string} comment
+   * @returns {Param} this
+   */
+  describe(comment) {
+    throwIfNotA(comment, prim.String);
+    this.comment = comment;
+    return this;
   }
 }

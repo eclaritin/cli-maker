@@ -18,6 +18,7 @@ import {
   ParamAction,
 } from "./Actions.mjs";
 import App from "./App.mjs";
+import { genHelp } from "./Help.mjs";
 
 // Internal Functions //
 
@@ -92,6 +93,21 @@ export default class Arg {
       actions.push(action);
     }
 
+    function delMainAction() {
+      // search predicate
+      const searchFunc = (val) => {
+        return val instanceof MainAction; // searches for the MainAction
+      };
+
+      // search both arrays
+      let stack_i = actionStack.findIndex(searchFunc);
+      let acts_i = actions.findIndex(searchFunc);
+
+      // delete from both
+      if (stack_i > -1) actionStack.splice(stack_i, 1);
+      if (acts_i > -1) actions.splice(acts_i, 1);
+    }
+
     for (let i = 0; i < valueArgs.length; i++) {
       let arg = valueArgs[i];
       let currAction = getCurrentAction();
@@ -123,6 +139,7 @@ export default class Arg {
               currAction.numRequiredArgs <= currAction.args.length
             ) {
               pushAction();
+              delMainAction();
               actionStack.push(new CommandAction(found));
             } else currAction.args.push(arg);
           } else if (currAction instanceof ParamAction) {
@@ -135,9 +152,10 @@ export default class Arg {
 
             if (found instanceof Param && !(found instanceof Command))
               actionStack.push(new ParamAction(found));
-            else if (found instanceof Command)
+            else if (found instanceof Command) {
+              if (found.disableMainProgram) delMainAction();
               actionStack.push(new CommandAction(found));
-            else if (found instanceof Scope) currentScope = found;
+            } else if (found instanceof Scope) currentScope = found;
             else
               throw new Error(
                 "Got unexpected value from Scope().get(): " + `${found}`,
@@ -204,5 +222,23 @@ export default class Arg {
     this.type = expectedType;
     this.default = defaultValue;
     this.comment = "";
+  }
+
+  // Methods //
+
+  /** Displays this arg's help message */
+  help() {
+    console.log(genHelp(this));
+  }
+
+  /**
+   * Sets the new comment for this object
+   * @param {string} comment
+   * @returns {Arg} this
+   */
+  describe(comment) {
+    throwIfNotA(comment, dt.String);
+    this.comment = comment;
+    return this;
   }
 }

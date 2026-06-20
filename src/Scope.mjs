@@ -10,6 +10,7 @@ import Param from "./Param.mjs";
 import Setting from "./Setting.mjs";
 import Command from "./Command.mjs";
 import { DataType as dt, isA, throwIfNotA } from "./Type.mjs";
+import { genHelp } from "./Help.mjs";
 
 // Misc Utility Functions //
 
@@ -43,6 +44,8 @@ export default class Scope {
   scopes;
   /** @type {string} */
   comment;
+  /** @type {boolean} */
+  showInHelp;
 
   /// Constructor ///
 
@@ -58,6 +61,26 @@ export default class Scope {
     this.commands = [];
     this.params = [];
     this.scopes = [];
+    this.showInHelp = true;
+
+    // Define Default Commands //
+    /** @type {Command} */
+    const helpCmd = this.command("help")
+      .alias("--help")
+      .alias("-h")
+      .alias("/h")
+      .alias("/?")
+      .alias("-?")
+      .alias("-help")
+      .alias("/help")
+      .describe("Displays this message");
+
+    // Default Commands Behavior //
+    let self = this;
+
+    helpCmd.callback(() => {
+      self.help();
+    });
   }
 
   /// Getters & Setters ///
@@ -69,11 +92,17 @@ export default class Scope {
 
   /** @type {string} */
   get helpMessage() {
-    // TODO
+    return genHelp(this);
   }
 
   /** @type {string} */
   get #configPath() {
+    let filename = this.absolutePath.replaceAll(" ", ".") + ".json"; // creates a filename separated by periods and specify its a json file
+    return path.join(configDir, filename); // append filename to the config directory path to be placed there
+  }
+
+  /** @type {string} A string by the format of `"appName parentScopeName thisScopeName"` */
+  get absolutePath() {
     // init vars
     let collected_names = [];
     let traverse = this;
@@ -84,8 +113,7 @@ export default class Scope {
       traverse = traverse.parent;
     }
     collected_names.reverse();
-    let filename = collected_names.join(".") + ".json"; // creates a filename separated by periods and specify its a json file
-    return path.join(configDir, filename); // append filename to the config directory path to be placed there
+    return collected_names.join(" "); // creates a string with spaces as delimiters
   }
 
   /** @readonly @type {{[key: string]: any?}} */
@@ -99,7 +127,18 @@ export default class Scope {
 
   /** Displays the help message for this scope */
   help() {
-    // TODO
+    console.log(this.helpMessage);
+  }
+
+  /**
+   * Sets the new comment for this object
+   * @param {string} comment
+   * @returns {Scope} this
+   */
+  describe(comment) {
+    throwIfNotA(comment, dt.String);
+    this.comment = comment;
+    return this;
   }
 
   // Config //
@@ -244,13 +283,19 @@ export default class Scope {
   /**
    * Creates a new scope in this one
    * @param {string} key
-   * @returns {Scope} 
+   * @returns {Scope}
    */
   scope(key) {
     throwIfNotA(key, dt.String);
 
     let newScope = new Scope(this, key);
     this.scopes.push(newScope);
+
+    // create help command
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/, "-"), () => {
+      newScope.help();
+    });
+    helpCmd.showInHelp = false;
 
     return newScope;
   }
@@ -259,13 +304,19 @@ export default class Scope {
    * Creates a new parameter in this scope
    * @param {string} key
    * @param {any?} [defaultValue=undefined]
-   * @returns {Param} 
+   * @returns {Param}
    */
   param(key, defaultValue = undefined) {
     throwIfNotA(key, dt.String);
 
     let newParam = new Param(this, key, defaultValue);
     this.params.push(newParam);
+
+    // create help command
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/, "-"), () => {
+      newParam.help();
+    });
+    helpCmd.showInHelp = false;
 
     return newParam;
   }
@@ -274,7 +325,7 @@ export default class Scope {
    * Creates a new setting in this scope
    * @param {string} key
    * @param {any?} [defaultValue=undefined]
-   * @returns {Setting} 
+   * @returns {Setting}
    */
   setting(key, defaultValue = undefined) {
     // validate
@@ -288,6 +339,12 @@ export default class Scope {
     this.command("--get-" + key, () => {
       console.log(newParam.value); // log value
     });
+
+    // create help command
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/, "-"), () => {
+      newParam.help();
+    });
+    helpCmd.showInHelp = false;
 
     return newParam;
   }
@@ -309,6 +366,14 @@ export default class Scope {
 
     let cmd = new Command(this, key, callbackfn);
     this.commands.push(cmd);
+
+    if (key.startsWith("--help-")) return cmd; // please don't create a help command for the help command
+
+    // create help command
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/g, "-"), () => {
+      cmd.help();
+    });
+    helpCmd.showInHelp = false;
 
     return cmd;
   }

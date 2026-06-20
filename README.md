@@ -14,6 +14,6 @@ A javascript library for easily making CLI applications. Handles ordinal argumen
   - [x] `Setting` (as in the subclass of param) methods & `Scope` config methods
   - [x] `Command` methods
   - [x] Argument parser
+  - [x] Help message generator
   - [ ] Default loop
-  - [ ] Help message generator
 - [ ] Write test implementation & debug

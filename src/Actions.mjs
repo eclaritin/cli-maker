@@ -2,7 +2,7 @@
 
 import Arg from "./Arg.mjs";
 import { dt, throwIfNotA } from "./Type.mjs";
-import App from "./App.mjs";
+import App, { DEBUG_MODE } from "./App.mjs";
 import Command from "./Command.mjs";
 
 /**
@@ -110,6 +110,7 @@ export class CommandAction extends Action {
     try {
       return this.ref.exec(...this.args);
     } catch (err) {
+      if (DEBUG_MODE) throw err;
       return console.error(`${err.name}: ${err.message}`);
     }
   }
@@ -143,7 +144,12 @@ export class MainAction extends CommandAction {
   /** @param {App} app */
   constructor(app) {
     throwIfNotA(app, App);
-    super({ args: app.mainArgs, exec: app.mainCallback, name: app.name });
+    super({
+      args: app.mainArgs,
+      exec: app.mainCallback,
+      name: app.name,
+      devnote: "please dont judge my amazing solution",
+    });
 
     this.type = Action.Type.Main;
   }

@@ -8,6 +8,7 @@ import {
   throwIfNotAType,
 } from "./Type.mjs";
 import Arg from "./Arg.mjs";
+import { genHelp } from "./Help.mjs";
 
 // Default Class //
 export default class Command extends Param {
@@ -46,7 +47,12 @@ export default class Command extends Param {
   /** @type {boolean} */
   throwIfInvalidArgs;
   /** @type {boolean} */
-  showInHelp;
+  disableMainProgram;
+
+  /** @type {string} */
+  get helpMessage() {
+    return genHelp(this);
+  }
 
   /// Constructor ///
 
@@ -66,7 +72,7 @@ export default class Command extends Param {
     throwIfNotA(callbackfn, dt.Function); // ensure callback param is of type function
     super(parentScope, name, callbackfn); // call default constructor with validated params
     this.args = [];
-    this.showInHelp = true;
+    this.disableMainProgram = true;
   }
 
   /// Methods ///
@@ -142,5 +148,9 @@ export default class Command extends Param {
     throwIfNotA(callbackfn, dt.Function);
 
     this.value = callbackfn;
+  }
+
+  help() {
+    console.log(this.helpMessage);
   }
 }

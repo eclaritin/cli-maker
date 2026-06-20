@@ -14,7 +14,7 @@ import {
 import Arg from "./Arg.mjs";
 
 // Constants //
-const DEBUG_MODE = true; // for debugging purposes, disable before release
+export const DEBUG_MODE = false; // for debugging purposes, disable before release
 
 // Default Class //
 export default class App extends Scope {
@@ -37,6 +37,8 @@ export default class App extends Scope {
   throwIfInvalidArgs;
   /** @type {boolean} If no mainCallback is specified or no args are passed, enter a mode where you navigate the various scopes of the CLI app */
   enableDefaultLoop;
+  /** @type {boolean} */
+  showExampleUsageInHelpMessage;
 
   /// Constructor ///
 
@@ -59,6 +61,7 @@ export default class App extends Scope {
     super(null, name);
 
     // assign fields
+    this.showExampleUsageInHelpMessage = false;
     this.mainArgs = [];
     this.version = "0.0.0";
     this.mainCallback = null;
@@ -80,7 +83,14 @@ export default class App extends Scope {
     if (argv.length === 2) return this.#defaultLoop();
 
     let actions = this.#parseArgs(argv);
+    if (DEBUG_MODE) console.log(actions);
     this.#runActions(actions);
+  }
+
+  // Help Message //
+
+  help() {
+    console.log(this.helpMessage);
   }
 
   // Argument parsing
@@ -92,6 +102,7 @@ export default class App extends Scope {
    */
   #parseArgs(argv = process.argv) {
     let stringArgs = argv[0] === process.argv[0] ? argv.slice(2) : argv; // if process.argv supplied, get rid of first two args (they are useless)
+    if (DEBUG_MODE) console.log(stringArgs);
     return Arg.parseArgs(this, stringArgs);
   }
 
@@ -226,6 +237,7 @@ export default class App extends Scope {
 
     // add to args
     this.mainArgs.push(myArg);
+    this.showExampleUsageInHelpMessage = true;
 
     return this;
   }
