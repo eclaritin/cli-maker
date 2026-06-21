@@ -1,6 +1,6 @@
 // Node Packages //
 import { default as process } from "process";
-import { default as readline } from "readline";
+import { Interface as ReadLineInterface, createInterface } from "readline";
 
 // Internal Modules //
 import Scope from "./Scope.mjs";
@@ -16,13 +16,26 @@ import Arg from "./Arg.mjs";
 // Constants //
 export const DEBUG_MODE = false; // for debugging purposes, disable before release
 
+// Internal Functions //
+
+/** delay for a certain amount of time (to prevent loops exploding my computer) */
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, ms);
+  });
+}
+
 // Default Class //
 export default class App extends Scope {
   /// Properties ///
   /** @type {string} */
   version;
   /** @type {Scope} */
-  #currentScope;
+  currentScope;
+  /** @type {ReadLineInterface} */
+  #rlInterface;
 
   // Callbacks //
   /** @type {((...any)=>void)?} default callback that is run when no actions or commands are specified */
@@ -39,6 +52,8 @@ export default class App extends Scope {
   enableDefaultLoop;
   /** @type {boolean} */
   showExampleUsageInHelpMessage;
+  /** @type {boolean} */
+  exitFlag;
 
   /// Constructor ///
 
@@ -60,13 +75,29 @@ export default class App extends Scope {
     // super
     super(null, name);
 
+    let self = this; // for referencing this instance in callbacks
+
     // assign fields
     this.showExampleUsageInHelpMessage = false;
     this.mainArgs = [];
     this.version = "0.0.0";
     this.mainCallback = null;
     this.#errorCallback = null;
-    this.#currentScope = this;
+    this.currentScope = this;
+    this.exitFlag = false;
+    this.enableDefaultLoop = true;
+
+    // Default Commands //
+
+    const startCmd = this.command("start", (...passToMainCB) => {
+      self.exec(...passToMainCB);
+    }).describe("Runs the program");
+    startCmd.args = this.mainArgs;
+
+    // Initialize Readline //
+    this.#rlInterface = createInterface(process.stdin, process.stdout);
+    this.#rlInterface.terminal = true;
+    this.#rlInterface.pause();
   }
 
   /// Methods ///
@@ -82,9 +113,11 @@ export default class App extends Scope {
   start(argv = process.argv) {
     if (argv.length === 2) return this.#defaultLoop();
 
-    let actions = this.#parseArgs(argv);
+    let parsed = this.#parseArgs(argv);
+    let actions = parsed.actions;
     if (DEBUG_MODE) console.log(actions);
     this.#runActions(actions);
+    this.currentScope = parsed.scope;
   }
 
   // Help Message //
@@ -97,8 +130,7 @@ export default class App extends Scope {
 
   /**
    * Parses raw string arguments and performs the written actions
-   * @param  {string[]} argv
-   * @returns {Action[]} the sequence of actions to perform
+   * @param {string[]} argv
    */
   #parseArgs(argv = process.argv) {
     let stringArgs = argv[0] === process.argv[0] ? argv.slice(2) : argv; // if process.argv supplied, get rid of first two args (they are useless)
@@ -115,44 +147,59 @@ export default class App extends Scope {
    */
   #defaultLoop(initScope = this) {
     if (!this.enableDefaultLoop) return;
+    this.currentScope = initScope;
+    this.exitFlag = false;
 
-    let userInput = "";
+    this.readLineAndRun();
+  }
 
-    let rli = readline.createInterface(process.stdin, process.stdout);
-    rli.on("line", (line) => {
-      userInput = line;
-    });
+  /** @param {boolean} first whether or not this is the first time this method is being called in the stack */
+  async readLineAndRun(first = true) {
+    let self = this;
+    this.#rlInterface.resume();
+    this.#rlInterface.question(
+      `${this.currentScope.absolutePath}>`,
+      (input) => {
+        self.runString(input);
+        if (!self.exitFlag) self.readLineAndRun();
+      },
+    );
 
-    let exitFlag = false;
-    this.#currentScope = initScope;
-    while (!exitFlag) {
-      if (DEBUG_MODE) exitFlag = true; // test only one iteration
-      try {
-        rli.write(``);
-        rli.line();
+    if (!first) return;
 
-        // filter out empty values from args
-        let args = userInput
-          .trim()
-          .split(" ")
-          .filter((elem) => {
-            return elem.trim() !== "";
-          });
+    while ((await sleep(100)) && !this.exitFlag) {} // halt until exit flag is true
 
-        let actions = Arg.parseArgs(this, args, this.#currentScope);
+    this.#rlInterface.close();
+  }
 
-        this.#runActions(actions);
-      } catch (err) {
-        console.error(err.message);
-      }
+  /** @param {string} line a single line string of args */
+  runString(line) {
+    try {
+      let args = line
+        .trim()
+        .split(" ")
+        .filter((elem) => {
+          return elem.trim() !== "";
+        }); // filter out empty values from args
+
+      // call arg parser
+      let parsed = Arg.parseArgs(this, args, this.currentScope);
+
+      // get actions
+      let actions = parsed.actions;
+      //if (DEBUG_MODE) console.log(actions);
+
+      // run actions
+      this.#runActions(actions);
+
+      this.currentScope = parsed.scope;
+    } catch (err) {
+      if (DEBUG_MODE) throw err;
+      console.error(`${err.name}: ${err.message}`);
     }
   }
 
-  /**
-   *
-   * @param {Action[]} actionArr
-   * @returns {Scope?} the current scope when leaving the loop
-   */
+  /** @param {Action[]} actionArr */
   #runActions(actionArr) {
     for (let i = 0; i < actionArr.length; i++) {
       let action = actionArr[i];
@@ -166,7 +213,7 @@ export default class App extends Scope {
    * @param  {...any} args the args to pass to main
    * @returns {any?[]} leftover arguments after running main
    */
-  #runMain(...args) {
+  exec(...args) {
     // if no main callback specified, just run the navigation loop
     if (!isA(this.mainCallback, dt.Function)) {
       // run main loop if no main callback

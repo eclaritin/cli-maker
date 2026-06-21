@@ -7,7 +7,7 @@ A javascript library for easily making CLI applications. Handles ordinal argumen
 - [x] Plan classes, properties, & methods.
 - [x] Convert plan to JS boilerplate
 - [x] Write package boilerplate & install dependencies
-- [ ] Functionality
+- [x] Functionality
   - [x] `Scope` getter methods
   - [x] `App` callback setting
   - [x] `Scope` adder methods
@@ -15,5 +15,5 @@ A javascript library for easily making CLI applications. Handles ordinal argumen
   - [x] `Command` methods
   - [x] Argument parser
   - [x] Help message generator
-  - [ ] Default loop
+  - [x] Default loop
 - [ ] Write test implementation & debug

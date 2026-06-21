@@ -40,6 +40,8 @@ export default class Command extends Param {
   // Command //
   /** @type {Arg[]} */
   args;
+  /** @type {string[]} */
+  aliases;
 
   // Flags //
   /** @type {boolean} */
@@ -72,6 +74,7 @@ export default class Command extends Param {
     throwIfNotA(callbackfn, dt.Function); // ensure callback param is of type function
     super(parentScope, name, callbackfn); // call default constructor with validated params
     this.args = [];
+    this.aliases = [];
     this.disableMainProgram = true;
   }
 
@@ -116,6 +119,7 @@ export default class Command extends Param {
     });
     refCmd.args = this.args;
     refCmd.showInHelp = false;
+    this.aliases.push(otherName);
     return this;
   }
 

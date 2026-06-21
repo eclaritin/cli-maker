@@ -75,11 +75,20 @@ export default class Scope {
       .alias("/help")
       .describe("Displays this message");
 
+    /** @type {Command} */
+    const exitCmd = this.command("exit")
+      .alias("quit")
+      .describe("Exits the program");
+
     // Default Commands Behavior //
     let self = this;
 
     helpCmd.callback(() => {
       self.help();
+    });
+
+    exitCmd.callback(() => {
+      self.app.exitFlag = true;
     });
   }
 
@@ -88,6 +97,17 @@ export default class Scope {
   /** @type {Scope?} */
   get parent() {
     return this.#scopeRef;
+  }
+
+  /** @type {App} (DO NOT IMPORT THIS FOR REAL) */
+  get app() {
+    let traverse = this;
+    let last = undefined;
+    while (traverse instanceof Scope) {
+      last = traverse;
+      traverse = traverse.parent;
+    }
+    return last; // the last parent should always be the app
   }
 
   /** @type {string} */
@@ -292,7 +312,7 @@ export default class Scope {
     this.scopes.push(newScope);
 
     // create help command
-    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/, "-"), () => {
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/g, "-"), () => {
       newScope.help();
     });
     helpCmd.showInHelp = false;
@@ -313,7 +333,7 @@ export default class Scope {
     this.params.push(newParam);
 
     // create help command
-    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/, "-"), () => {
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/g, "-"), () => {
       newParam.help();
     });
     helpCmd.showInHelp = false;
@@ -341,7 +361,7 @@ export default class Scope {
     });
 
     // create help command
-    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/, "-"), () => {
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/g, "-"), () => {
       newParam.help();
     });
     helpCmd.showInHelp = false;

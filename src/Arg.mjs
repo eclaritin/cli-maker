@@ -64,7 +64,7 @@ export default class Arg {
    * @param {App} app the app to use as the default action
    * @param  {string[]} args (REMOVE THE FIRST TWO ELEMENTS IF USING `process.argv`!)
    * @param {Scope} [initScope=app] The initial current scope to search
-   * @returns {Action[]}
+   * @returns {{'actions':Action[], 'scope':Scope}}
    */
   static parseArgs(app, args, initScope = app) {
     throwIfNotA(app, App);
@@ -155,8 +155,10 @@ export default class Arg {
             else if (found instanceof Command) {
               if (found.disableMainProgram) delMainAction();
               actionStack.push(new CommandAction(found));
-            } else if (found instanceof Scope) currentScope = found;
-            else
+            } else if (found instanceof Scope) {
+              currentScope = found;
+              delMainAction();
+            } else
               throw new Error(
                 "Got unexpected value from Scope().get(): " + `${found}`,
               );
@@ -184,10 +186,10 @@ export default class Arg {
       }
 
       currAction = getCurrentAction();
-      if (currAction.readyToPush) pushAction();
+      if (currAction) if (currAction.readyToPush) pushAction();
     }
 
-    return actions;
+    return { actions: actions, scope: currentScope };
   }
 
   /// Instance ///

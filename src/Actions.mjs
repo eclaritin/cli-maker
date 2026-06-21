@@ -146,7 +146,7 @@ export class MainAction extends CommandAction {
     throwIfNotA(app, App);
     super({
       args: app.mainArgs,
-      exec: app.mainCallback,
+      exec: app.exec,
       name: app.name,
       devnote: "please dont judge my amazing solution",
     });

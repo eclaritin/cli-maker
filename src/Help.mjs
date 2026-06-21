@@ -111,7 +111,8 @@ function genHelp_Command(cmd) {
     message += genHelp_Arg(arg) + "\n";
   }
 
-  message += "\n";
+  if (cmd.aliases.length > 0)
+    message += `\nAliases: ${cmd.aliases.join(", ")}\n`;
 
   return message;
 }
