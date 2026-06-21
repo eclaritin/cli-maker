@@ -10,7 +10,7 @@
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/tests/calc.cjs",
-      //"args": ["geometry", "pytha", "2", "2"]
+      "args": ["geometry", "pytha", "2", "2"]
     }
   ]
 }
