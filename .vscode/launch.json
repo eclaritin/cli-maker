@@ -9,8 +9,8 @@
       "request": "launch",
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/tests/calc.cjs",
-      "args": ["geometry", "pytha", "2", "2"]
+      "program": "${workspaceFolder}/tests/helloWorld.cjs",
+      "args": ["Eclair", "--!"]
     }
   ]
 }

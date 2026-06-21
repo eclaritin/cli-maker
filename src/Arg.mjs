@@ -19,6 +19,7 @@ import {
 } from "./Actions.mjs";
 import App from "./App.mjs";
 import { genHelp } from "./Help.mjs";
+import Flag from "./Flag.mjs";
 
 // Internal Functions //
 
@@ -132,7 +133,11 @@ export default class Arg {
             currAction.argsLeft !== 0
           ) {
             // this is inside an argument chain
-            if (found instanceof Param && !(found instanceof Command))
+            if (found instanceof Flag) {
+              let flagSetter = new ParamAction(found);
+              flagSetter.value = !found.value;
+              actions.push(flagSetter);
+            } else if (found instanceof Param && !(found instanceof Command))
               actionStack.push(new ParamAction(found));
             else if (
               found instanceof Command &&
@@ -188,6 +193,10 @@ export default class Arg {
       currAction = getCurrentAction();
       if (currAction) if (currAction.readyToPush) pushAction();
     }
+
+    actions = actions.sort((a, b) => {
+      return a instanceof MainAction ? 1 : -1;
+    });
 
     return { actions: actions, scope: currentScope };
   }

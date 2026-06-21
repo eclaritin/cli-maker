@@ -11,6 +11,7 @@ import Setting from "./Setting.mjs";
 import Command from "./Command.mjs";
 import { DataType as dt, isA, throwIfNotA } from "./Type.mjs";
 import { genHelp } from "./Help.mjs";
+import Flag from "./Flag.mjs";
 
 // Misc Utility Functions //
 
@@ -330,6 +331,22 @@ export default class Scope {
     throwIfNotA(key, dt.String);
 
     let newParam = new Param(this, key, defaultValue);
+    this.params.push(newParam);
+
+    // create help command
+    let helpCmd = this.command("--help-" + key.replaceAll(/\-+/g, "-"), () => {
+      newParam.help();
+    });
+    helpCmd.showInHelp = false;
+
+    return newParam;
+  }
+
+  flag(key, defaultValue = false) {
+    throwIfNotA(key, dt.String);
+    throwIfNotA(defaultValue, dt.Boolean);
+
+    let newParam = new Flag(this, key, defaultValue);
     this.params.push(newParam);
 
     // create help command

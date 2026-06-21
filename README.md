@@ -4,6 +4,7 @@ A javascript library for easily making CLI applications. Handles ordinal argumen
 
 ## To-do:
 
+- [x] Boolean flag handling (ex: --verbose)
 - [ ] Test implementations
   - [x] Ah yes, Hello World, a classic.
   - [ ] I already have a little sample calculator CLI app. I could expand that.

@@ -14,7 +14,7 @@ import {
 import Arg from "./Arg.mjs";
 
 // Constants //
-export const DEBUG_MODE = false; // for debugging purposes, disable before release
+export const DEBUG_MODE = true; // for debugging purposes, disable before release
 
 // Internal Functions //
 
@@ -111,7 +111,7 @@ export default class App extends Scope {
    * @returns {any} the value returned by the final command or main callback
    */
   start(argv = process.argv) {
-    if (argv.length === 2) return this.#defaultLoop();
+    if (argv.length === 2) return this.initLoop();
 
     let parsed = this.#parseArgs(argv);
     let actions = parsed.actions;
@@ -145,7 +145,7 @@ export default class App extends Scope {
    * This starts a terminal-like loop where you can enter different scopes & perform actions & commands more easily.
    * @param {Scope} [initScope] The initial scope to start the loop in. (Set to App scope by default).
    */
-  #defaultLoop(initScope = this) {
+  initLoop(initScope = this) {
     if (!this.enableDefaultLoop) return;
     this.currentScope = initScope;
     this.exitFlag = false;
@@ -217,7 +217,7 @@ export default class App extends Scope {
     // if no main callback specified, just run the navigation loop
     if (!isA(this.mainCallback, dt.Function)) {
       // run main loop if no main callback
-      this.#defaultLoop();
+      this.initLoop();
       return;
     }
 

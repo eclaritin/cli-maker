@@ -3,7 +3,9 @@
 import Arg from "./Arg.mjs";
 import { dt, throwIfNotA } from "./Type.mjs";
 import App, { DEBUG_MODE } from "./App.mjs";
+import Param from "./Param.mjs";
 import Command from "./Command.mjs";
+import Setting from "./Setting.mjs";
 
 /**
  * The base Action class. Not meant to be used directly,
@@ -129,6 +131,7 @@ export class ParamAction extends Action {
     super(Action.Type.Param, ref);
 
     this.#value = undefined;
+    this.ref = ref;
     if (!(ref instanceof Setting)) this.alsoRunMainCallback = true;
   }
 
@@ -136,6 +139,10 @@ export class ParamAction extends Action {
   value(value) {
     throwIfNotA(value, this.ref.type);
     this.#value = value;
+  }
+
+  run() {
+    this.ref.value = this.#value;
   }
 }
 
@@ -146,7 +153,7 @@ export class MainAction extends CommandAction {
     throwIfNotA(app, App);
     super({
       args: app.mainArgs,
-      exec: app.exec,
+      exec: (...passToApp) => app.exec(...passToApp),
       name: app.name,
       devnote: "please dont judge my amazing solution",
     });
