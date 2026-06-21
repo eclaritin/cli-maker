@@ -1,19 +1,11 @@
 # CLI-MAKER
 
-A javascript library for easily making CLI applications. Handles ordinal arguments, named parameters, configuration files, & help messages for you. The goal is to allow you to focus on writing your program without constantly worrying about parsing command-line args.
+A javascript library for easily making CLI applications. Handles ordinal arguments, named parameters, configuration files, & help messages all with minimalistically named methods. A mini-console-app is included that runs when no args are passed; it allows you to navigate the app's scopes & run multiple internal commands easily. The goal of this project is to allow you to focus on writing your program without constantly worrying about parsing command-line args.
 
 ## To-do:
 
-- [x] Plan classes, properties, & methods.
-- [x] Convert plan to JS boilerplate
-- [x] Write package boilerplate & install dependencies
-- [x] Functionality
-  - [x] `Scope` getter methods
-  - [x] `App` callback setting
-  - [x] `Scope` adder methods
-  - [x] `Setting` (as in the subclass of param) methods & `Scope` config methods
-  - [x] `Command` methods
-  - [x] Argument parser
-  - [x] Help message generator
-  - [x] Default loop
-- [ ] Write test implementation & debug
+- [ ] Test implementations
+  - [x] Ah yes, Hello World, a classic.
+  - [ ] I already have a little sample calculator CLI app. I could expand that.
+- [ ] Write unit test module
+- [ ] Debugging (yippee /s)
