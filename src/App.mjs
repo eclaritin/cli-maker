@@ -14,7 +14,7 @@ import {
 import Arg from "./Arg.mjs";
 
 // Constants //
-export const DEBUG_MODE = true; // for debugging purposes, disable before release
+export const DEBUG_MODE = false; // for debugging purposes, disable before release
 
 // Internal Functions //
 
