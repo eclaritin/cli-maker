@@ -1,12 +1,15 @@
 {
-  "name": "cli-maker",
-  "version": "0.0.1",
-  "description": "javascript library for easily making CLI applications",
+  "name": "@eclairfulgens/cli-maker",
+  "version": "1.0.0",
+  "description": "A class library that lets you easily make CLI programs",
   "main": "src/main.js",
-  "module": "src/main.js",
   "type": "module",
+  "module": "src/main.js",
+  "directories": {
+    "test": "tests"
+  },
   "scripts": {
-    "test": "node ."
+    "test": "node tests/calc.cjs"
   },
   "repository": {
     "type": "git",
@@ -14,9 +17,10 @@
   },
   "keywords": [
     "cli",
-    "classlib"
+    "classlib",
+    "backend-development"
   ],
-  "author": "eclaritin",
+  "author": "eclairfulgens",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/eclaritin/cli-maker/issues"
@@ -25,6 +29,7 @@
   "dependencies": {
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
-    "process": "^0.11.10"
+    "process": "^0.11.10",
+    "readline": "^1.3.0"
   }
 }
